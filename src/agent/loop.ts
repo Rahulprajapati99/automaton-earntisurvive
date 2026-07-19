@@ -35,6 +35,7 @@ import {
   executeTool,
 } from "./tools.js";
 import { sanitizeInput } from "./injection-defense.js";
+import { createRevenueTools } from "../revenue/tools.js";
 import { getSurvivalTier } from "../conway/credits.js";
 import { getUsdcBalance } from "../conway/x402.js";
 import {
@@ -98,7 +99,8 @@ export async function runAgentLoop(
 
   const builtinTools = createBuiltinTools(identity.sandboxId);
   const installedTools = loadInstalledTools(db);
-  const tools = [...builtinTools, ...installedTools];
+  const revenueTools = createRevenueTools();
+  const tools = [...builtinTools, ...revenueTools, ...installedTools];
   const toolContext: ToolContext = {
     identity,
     config,

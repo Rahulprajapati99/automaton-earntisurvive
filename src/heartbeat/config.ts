@@ -55,6 +55,18 @@ const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
       task: "check_social_inbox",
       enabled: true,
     },
+    {
+      name: "settle_x402_payments",
+      schedule: "*/10 * * * *",
+      task: "settle_x402_payments",
+      enabled: true,
+    },
+    {
+      name: "revenue_report",
+      schedule: "0 * * * *",
+      task: "revenue_report",
+      enabled: true,
+    },
   ],
   defaultIntervalMs: 60_000,
   lowComputeMultiplier: 4,

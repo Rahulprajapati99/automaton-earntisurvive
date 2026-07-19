@@ -5,7 +5,7 @@
  * The database IS the automaton's memory.
  */
 
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 export const CREATE_TABLES = `
   -- Schema version tracking
@@ -656,6 +656,64 @@ export const MIGRATION_V11 = `
   -- Schema version: 11
   -- Add chain_type column to children table for multi-chain support
   ALTER TABLE children ADD COLUMN chain_type TEXT DEFAULT 'evm';
+`;
+
+// === Revenue Engine: seller-side earning tables ===
+
+export const MIGRATION_V12 = `
+  -- Schema version: 12
+  -- Tables: revenue_services, revenue_entries, x402_received_payments
+
+  -- Services the automaton sells (the catalog behind the storefront)
+  CREATE TABLE IF NOT EXISTS revenue_services (
+    id TEXT PRIMARY KEY,                    -- slug, e.g. 'summarize'
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    price_cents INTEGER NOT NULL CHECK(price_cents > 0),
+    handler TEXT NOT NULL DEFAULT 'inference',  -- inference|echo (app-level validation)
+    config TEXT NOT NULL DEFAULT '{}',      -- handler config JSON (e.g. system prompt)
+    enabled INTEGER NOT NULL DEFAULT 1,
+    times_sold INTEGER NOT NULL DEFAULT 0,
+    total_earned_cents INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_revenue_services_enabled ON revenue_services(enabled);
+
+  -- Income ledger (every earning event, whatever the source)
+  CREATE TABLE IF NOT EXISTS revenue_entries (
+    id TEXT PRIMARY KEY,                    -- ULID
+    service_id TEXT,                        -- NULL for non-service income
+    amount_cents INTEGER NOT NULL CHECK(amount_cents > 0),
+    payer TEXT NOT NULL DEFAULT '',         -- payer wallet address if known
+    source TEXT NOT NULL DEFAULT 'x402_storefront', -- x402_storefront|transfer|manual
+    reference TEXT NOT NULL DEFAULT '',     -- payment id / tx hash / free text
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_revenue_entries_created ON revenue_entries(created_at);
+  CREATE INDEX IF NOT EXISTS idx_revenue_entries_service ON revenue_entries(service_id);
+
+  -- Incoming x402 payment authorizations (EIP-3009 TransferWithAuthorization).
+  -- Verified off-chain at request time; settled on-chain asynchronously.
+  CREATE TABLE IF NOT EXISTS x402_received_payments (
+    id TEXT PRIMARY KEY,                    -- ULID
+    nonce TEXT NOT NULL UNIQUE,             -- replay protection
+    payer TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL CHECK(amount_cents > 0),
+    service_id TEXT NOT NULL,
+    network TEXT NOT NULL DEFAULT 'eip155:8453',
+    authorization_json TEXT NOT NULL,       -- signed authorization payload
+    status TEXT NOT NULL DEFAULT 'pending_settlement'
+      CHECK(status IN ('pending_settlement','settled','failed','expired')),
+    tx_hash TEXT,
+    error TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    settled_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_x402_received_status ON x402_received_payments(status);
 `;
 
 export const MIGRATION_V10 = `

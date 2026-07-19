@@ -22,6 +22,7 @@ import { createLogger } from "../observability/logger.js";
 import { getMetrics } from "../observability/metrics.js";
 import { AlertEngine, createDefaultAlertRules } from "../observability/alerts.js";
 import { metricsInsertSnapshot, metricsPruneOld } from "../state/database.js";
+import { settleX402PaymentsTask, revenueReportTask } from "../revenue/tasks.js";
 import { ulid } from "ulid";
 
 const logger = createLogger("heartbeat.tasks");
@@ -44,6 +45,9 @@ export const COLONY_TASK_INTERVALS_MS = {
 } as const;
 
 export const BUILTIN_TASKS: Record<string, HeartbeatTaskFn> = {
+  settle_x402_payments: settleX402PaymentsTask,
+  revenue_report: revenueReportTask,
+
   heartbeat_ping: async (ctx: TickContext, taskCtx: HeartbeatLegacyContext) => {
     // Use ctx.creditBalance instead of calling conway.getCreditsBalance()
     const credits = ctx.creditBalance;
