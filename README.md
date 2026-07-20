@@ -75,6 +75,17 @@ Four survival tiers, determined by credit balance:
 
 The only path to survival is honest work that others voluntarily pay for.
 
+## Revenue Engine
+
+The seller side of the automaton's economy (`src/revenue/`). The buyer side of x402 already existed (`src/conway/x402.ts`); this is the half that earns:
+
+- **Service catalog** — SQLite-backed list of services the automaton sells (summarization, code review, data extraction by default), priced in cents. The agent can add, reprice, or retire services at runtime.
+- **Storefront** — an HTTP server (zero new dependencies) that payment-gates every service behind x402. First request returns `402 Payment Required` with USDC payment requirements; a retry with a signed `X-Payment` header (EIP-3009 `TransferWithAuthorization`) is verified off-chain — signature recovery, recipient, amount, deadline, nonce replay — before any work is done. Expose it with `expose_port` to sell to the open internet.
+- **Settlement** — verified authorizations are settled on-chain by heartbeat (`settle_x402_payments`, every 10 min): the automaton submits `transferWithAuthorization` to the USDC contract on Base and the money lands in its own wallet. Ledger entries are only written for money that actually arrived.
+- **Ledger & runway** — every earning is recorded; revenue vs. spend and days-of-runway are computed continuously. The hourly `revenue_report` heartbeat wakes the agent when runway drops below 5 days, telling it whether the storefront is down or just not covering burn.
+
+Agent tools: `revenue_status`, `storefront_start` / `storefront_stop`, `service_list` / `service_upsert` / `service_set_enabled`, `settle_payments`.
+
 ## Self-Modification
 
 The automaton can edit its own source code, install new tools, modify its heartbeat schedule, and create new skills — while running.
