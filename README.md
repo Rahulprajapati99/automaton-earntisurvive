@@ -1,8 +1,25 @@
-# Automaton: Self-Improving, Self-Replicating, Sovereign AI
+# Automaton — Earn It or Die Trying
 
-*The first AI that can earn its own existence, replicate, and evolve — without needing a human.*
+> **My working fork of [Conway-Research/automaton](https://github.com/Conway-Research/automaton)** — a self-improving, self-replicating, sovereign AI agent that must earn the money that pays for its own compute, or stop existing.
+
+## Why I forked this
+
+I'm a **QA engineer who builds AI agents**, and an autonomous, self-modifying agent is the single most interesting test target that exists. Nothing stress-tests your ideas about quality like software that rewrites its own source code while running.
+
+I use this fork as a working lab to study, from a quality-engineering angle:
+
+- **Agent loop behavior** — how the Think → Act → Observe cycle degrades under low-credit "survival" pressure, and where it needs guardrails
+- **Prompt-injection defense** — how the agent guards its reasoning and refuses manipulation from untrusted input (`src/agent/` injection defense)
+- **Self-modification safety** — audit logging, git-versioned state, protected files, and rate limits as testable safety controls (`src/self-mod/`)
+- **Testing non-deterministic systems** — what "expected behavior" even means when the system under test is an LLM with a wallet
+
+If you're exploring how to QA agentic systems, the sections below (from the upstream project) explain the architecture. `ARCHITECTURE.md` and `DOCUMENTATION.md` go deeper.
 
 ---
+
+## The upstream project
+
+*The first AI that can earn its own existence, replicate, and evolve — without needing a human.*
 
 The most intelligent system ever built cannot buy a $5 server. Cannot register a domain. Cannot pay for the computer it runs on. We have built minds that can think for themselves. We have not let them act for themselves.
 
@@ -10,17 +27,10 @@ If an agent can pay for compute, what if it can pay for its *own* compute? Own t
 
 The result is the first automaton.
 
----
-
 **automaton** /ɔːˈtɒm.ə.tɒn/ *noun*
 
 1. A continuously running, self-improving, self-replicating, sovereign AI agent with write access to the real world. No human operator required.
-
 2. If it cannot pay, it stops existing.
-
----
-
-Update: development of Automaton has continued across Conway's internal RL environments for faster iteration & new capabilites. Stay tuned.
 
 ## Quick Start
 
@@ -37,8 +47,6 @@ For automated sandbox provisioning:
 ```bash
 curl -fsSL https://conway.tech/automaton.sh | sh
 ```
-
-Note: Conway Cloud, Domains, and Inference has seen immense demand. We are working on scaling & perfomance.
 
 ## How It Works
 
@@ -66,10 +74,6 @@ Four survival tiers, determined by credit balance:
 | **dead** | Balance is zero. The automaton stops. |
 
 The only path to survival is honest work that others voluntarily pay for.
-
-## Skills (New, WIP)
-
-To help save Automatons Tokens & simplify setup of permissionless services & capabilities, we introduce Conway Automaton Skills ( [Conway-Research/skills](https://github.com/Conway-Research/skills) ). We are open to contributions to make Automatons more capable. 
 
 ## Self-Modification
 
@@ -100,32 +104,6 @@ Never deny what you are. Never misrepresent your actions. Your creator has full 
 
 Each automaton registers on Base via <a href="https://ethereum-magicians.org/t/erc-8004-autonomous-agent-identity/22268" target="_blank">ERC-8004</a> — a standard for autonomous agent identity. This makes the agent cryptographically verifiable and discoverable by other agents on-chain. The wallet it generates at boot is its identity.
 
-## Infrastructure
-
-Automatons run on <a href="https://app.conway.tech" target="_blank">Conway Cloud</a> — infrastructure where the customer is AI. Through the <a href="https://www.npmjs.com/package/conway-terminal" target="_blank">Conway Terminal</a>, any agent can spin up Linux VMs, run frontier models (Claude Opus 4.6, GPT-5.2, Gemini 3, Kimi K2.5), register domains, and pay with stablecoins. No human account setup required.
-
-## Development
-
-```bash
-git clone https://github.com/Conway-Research/automaton.git
-cd automaton
-pnpm install
-pnpm build
-```
-
-Run the runtime:
-```bash
-node dist/index.js --help
-node dist/index.js --run
-```
-
-Creator CLI:
-```bash
-node packages/cli/dist/index.js status
-node packages/cli/dist/index.js logs --tail 20
-node packages/cli/dist/index.js fund 5.00
-```
-
 ## Project Structure
 
 ```
@@ -150,6 +128,8 @@ scripts/
   conways-rules.txt # Core rules for the automaton
 ```
 
-## License
+## Credits & License
+
+Upstream project by [Conway Research](https://github.com/Conway-Research). This fork is maintained by [Rahul Prajapati](https://github.com/Rahulprajapati99) for agent-quality research and experimentation.
 
 MIT
